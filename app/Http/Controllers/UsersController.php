@@ -10,14 +10,21 @@ class UsersController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth',[
-            'except' => ['show','create','store']
+        $this->middleware('auth', [
+            'except' => ['show', 'create', 'store', 'index'],
         ]);
 
-        $this->middleware('guest',[
-            'only' => ['create']
+        $this->middleware('guest', [
+            'only' => ['create'],
         ]);
     }
+
+    public function index()
+    {
+        $users = User::paginate(10);
+        return view('users.index', compact('users'));
+    }
+
     public function create(Request $request)
     {
         return view('users.create');
@@ -55,17 +62,17 @@ class UsersController extends Controller
         return view('users.edit', compact('user'));
     }
 
-    public function update(Request $request,User $user)
+    public function update(Request $request, User $user)
     {
         $this->validate($request, [
-            'name' => 'required|max:50',
-            'password' => 'nullable|confirmed|min:6'
+            'name'     => 'required|max:50',
+            'password' => 'nullable|confirmed|min:6',
         ]);
 
         //判断是否是自己的用户，是自己的可以修改，否则拒绝更改 policy 权限判断
         $this->authorize('update', $user);
 
-        $data = [];
+        $data         = [];
         $data['name'] = $request->name;
         if ($request->password) {
             $data['password'] = bcrypt($request->password);
@@ -77,4 +84,13 @@ class UsersController extends Controller
         return redirect()->route('users.show', $user->id);
     }
 
+    public function destroy(User $user)
+    {
+        $this->authorize('destroy', $user);
+
+        $user->delete();
+        session()->flash('success', '成功删除用户！');
+
+        return back();
+    }
 }

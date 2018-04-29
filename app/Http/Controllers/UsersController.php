@@ -8,6 +8,16 @@ use Illuminate\Support\Facades\Auth;
 
 class UsersController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth',[
+            'except' => ['show','create','store']
+        ]);
+
+        $this->middleware('guest',[
+            'only' => ['create']
+        ]);
+    }
     public function create(Request $request)
     {
         return view('users.create');
@@ -21,14 +31,14 @@ class UsersController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'name' => 'required|max:50|min:2',
-            'email' => 'required|email|unique:users|max:100',
-            'password' => 'required|confirmed|min:6'
+            'name'     => 'required|max:50|min:2',
+            'email'    => 'required|email|unique:users|max:100',
+            'password' => 'required|confirmed|min:6',
         ]);
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
+            'name'     => $request->name,
+            'email'    => $request->email,
             'password' => bcrypt($request->password),
         ]);
 
@@ -40,5 +50,31 @@ class UsersController extends Controller
 
     }
 
+    public function edit(User $user)
+    {
+        return view('users.edit', compact('user'));
+    }
+
+    public function update(Request $request,User $user)
+    {
+        $this->validate($request, [
+            'name' => 'required|max:50',
+            'password' => 'nullable|confirmed|min:6'
+        ]);
+
+        //判断是否是自己的用户，是自己的可以修改，否则拒绝更改 policy 权限判断
+        $this->authorize('update', $user);
+
+        $data = [];
+        $data['name'] = $request->name;
+        if ($request->password) {
+            $data['password'] = bcrypt($request->password);
+        }
+        $user->update($data);
+
+        session()->flash('success', '个人资料更新成功！');
+
+        return redirect()->route('users.show', $user->id);
+    }
 
 }

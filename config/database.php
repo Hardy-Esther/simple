@@ -80,7 +80,7 @@ return [
             'schema'   => 'public',
             'sslmode'  => 'prefer',
         ],
-        
+
 
         'sqlsrv' => [
             'driver' => 'sqlsrv',

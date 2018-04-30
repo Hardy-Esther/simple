@@ -12,7 +12,7 @@ class UsersController extends Controller
     public function __construct()
     {
         $this->middleware('auth', [
-            'except' => ['show', 'create', 'store', 'index','confirmEmail'],
+            'except' => ['show', 'create', 'store', 'index', 'confirmEmail'],
         ]);
 
         $this->middleware('guest', [
@@ -100,24 +100,21 @@ class UsersController extends Controller
 
     protected function sendEmailConfirmationTo($user)
     {
-        $view = 'emails.confirm';
-        $data = compact('user');
-        $from = 'aufree@yousails.com';
-        $name = 'Aufree';
-        $to = $user->email;
+        $view    = 'emails.confirm';
+        $data    = compact('user');
+        $to      = $user->email;
         $subject = "感谢注册 Sample 应用！请确认你的邮箱。";
 
-        Mail::send($view, $data, function ($message) use ($from, $name, $to, $subject) {
-            $message->from($from, $name)->to($to)->subject($subject);
+        Mail::send($view, $data, function ($message) use ($to, $subject) {
+            $message->to($to)->subject($subject);
         });
-
     }
 
     public function confirmEmail($token)
     {
         $user = User::where('activation_token', $token)->firstOrFail();
 
-        $user->activated = true;
+        $user->activated        = true;
         $user->activation_token = null;
         $user->save();
 

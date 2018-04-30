@@ -18,6 +18,11 @@ Route::get('/about', 'StaticPagesController@about')->name('about');
 Route::get('sign-up','UsersController@create')->name('sign-up');
 
 Route::resource('users', 'UsersController');
+Route::get('/users/{user}/followings', 'UsersController@followings')->name('users.followings');
+Route::get('/users/{user}/followers', 'UsersController@followers')->name('users.followers');
+Route::post('/users/followers/{user}', 'FollowersController@store')->name('followers.store');
+Route::delete('/users/followers/{user}', 'FollowersController@destroy')->name('followers.destroy');
+
 Route::resource('statuses', 'StatusesController', ['only' => ['store', 'destroy']]);
 
 Route::get('login', 'SessionsController@create')->name('login');
